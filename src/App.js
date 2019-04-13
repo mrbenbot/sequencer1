@@ -5,16 +5,6 @@ import "./App.css";
 var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 let osc = audioCtx.createOscillator();
 osc.type = "triangle";
-// var analyser = audioCtx.createAnalyser();
-// analyser.minDecibels = -90;
-// analyser.maxDecibels = -10;
-// analyser.smoothingTimeConstant = 0.85;
-// var gainNode = audioCtx.createGain();
-// osc.connect(gainNode);
-// gainNode.connect(audioCtx.destination);
-
-// gainNode.gain.value = 0;
-// osc.frequency.value = 200;
 
 class App extends Component {
 	constructor(props) {
@@ -26,10 +16,6 @@ class App extends Component {
 		};
 	}
 	changeSlider = (event, index) => {
-		console.log("event ", event);
-		// return;
-		// event.persist();
-		console.log(parseInt(event.target.value));
 		this.setState(state => ({
 			ranges: [
 				...state.ranges.slice(0, index),
@@ -39,8 +25,8 @@ class App extends Component {
 		}));
 	};
 
-	looper = () => {
-		var intervalId = setInterval(this.cycleSound, 500);
+	loop = () => {
+		var intervalId = setInterval(this.cycleSound, 250);
 		this.setState(() => ({
 			intervalId
 		}));
@@ -64,77 +50,27 @@ class App extends Component {
 		osc.connect(audioCtx.destination);
 		setTimeout(() => osc.disconnect(), 100);
 	};
-	// playSound = freq => {
-	// 	if (this.state.firstTime) {
-	// 		osc.start(0);
-	// 		this.setState(state => ({ firstTime: false }));
-	// 	}
-	// 	var now = audioCtx.currentTime;
-
-	// 	osc.connect(audioCtx.destination);
-	// 	// Cancel any existing automation (to prevent overlaps).
-	// 	osc.frequency.cancelScheduledValues(now);
-	// 	gainNode.gain.cancelScheduledValues(now);
-
-	// 	osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-	// 	// Gate-on.
-	// 	gainNode.gain.setValueAtTime(gainNode.gain.value, now);
-	// 	gainNode.gain.linearRampToValueAtTime(0.1, now + 0.01);
-
-	// 	// Gate-off after 250ms.
-	// 	gainNode.gain.setValueAtTime(0.1, now + 0.245);
-	// 	gainNode.gain.linearRampToValueAtTime(0, now + 0.25);
-
-	// 	// You might be able to move the frequency-increase here -
-	// 	// so that it is already at the correct level for the next
-	// 	// boop().
-	// 	// value in hertz
-
-	// 	setTimeout(() => osc.disconnect(), 100);
-	// };
 
 	render() {
+		const { ranges } = this.state;
 		return (
 			<div className="App">
 				<div>
-					<p>
-						{this.state.ranges[0]}
-						{this.state.ranges[1]}
-						{this.state.ranges[2]}
-						{this.state.ranges[3]}
-					</p>
+					<p>{ranges.map(item => item)}</p>
 				</div>
 				<div>
-					<input
-						value={this.state.ranges[0]}
-						onChange={() => this.changeSlider(window.event, 0)}
-						type="range"
-						min="40"
-						max="2000"
-					/>
-					<input
-						value={this.state.ranges[1]}
-						onChange={() => this.changeSlider(window.event, 1)}
-						type="range"
-						min="40"
-						max="2000"
-					/>
-					<input
-						value={this.state.ranges[2]}
-						onChange={() => this.changeSlider(window.event, 2)}
-						type="range"
-						min="40"
-						max="2000"
-					/>
-					<input
-						value={this.state.ranges[3]}
-						onChange={() => this.changeSlider(window.event, 3)}
-						type="range"
-						min="40"
-						max="2000"
-					/>
+					{ranges.map((item, i) => (
+						<input
+							key={i}
+							value={ranges[i]}
+							onChange={() => this.changeSlider(window.event, i)}
+							type="range"
+							min="40"
+							max="2000"
+						/>
+					))}
 				</div>
-				<button onClick={this.looper}>play</button>
+				<button onClick={this.loop}>play</button>
 				<button onClick={this.stopLoop}>stop</button>
 			</div>
 		);
