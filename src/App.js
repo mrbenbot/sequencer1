@@ -10,7 +10,7 @@ class App extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-			ranges: [440, 440, 440, 440],
+			ranges: [440, 440, 440, 440, 440, 440, 440, 440],
 			currentRange: 0,
 			firstTime: true
 		};
@@ -38,7 +38,10 @@ class App extends Component {
 		const { ranges, currentRange } = this.state;
 		this.playSound(ranges[currentRange]);
 		this.setState(state => ({
-			currentRange: state.currentRange < 3 ? state.currentRange + 1 : 0
+			currentRange:
+				state.currentRange < state.ranges.length - 1
+					? state.currentRange + 1
+					: 0
 		}));
 	};
 	playSound = freq => {
