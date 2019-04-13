@@ -1,10 +1,14 @@
 import React, { Component } from "react";
-import logo from "./logo.svg";
 import "./App.css";
 
 var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 let osc = audioCtx.createOscillator();
 osc.type = "triangle";
+
+var osc_volume = audioCtx.createGain();
+osc_volume.gain.linearRampToValueAtTime(0, 0);
+osc.connect(osc_volume);
+osc_volume.connect(audioCtx.destination);
 
 class App extends Component {
 	constructor(props) {
@@ -12,7 +16,8 @@ class App extends Component {
 		this.state = {
 			ranges: [440, 440, 440, 440, 440, 440, 440, 440],
 			currentRange: 0,
-			firstTime: true
+			firstTime: true,
+			volume: 0.1
 		};
 	}
 	changeSlider = (event, index) => {
@@ -33,6 +38,7 @@ class App extends Component {
 	};
 	stopLoop = () => {
 		clearInterval(this.state.intervalId);
+		osc.disconnect(audioCtx.destination);
 	};
 	cycleSound = () => {
 		const { ranges, currentRange } = this.state;
@@ -49,9 +55,17 @@ class App extends Component {
 			osc.start();
 			this.setState(state => ({ firstTime: false }));
 		}
-		osc.frequency.setValueAtTime(freq, audioCtx.currentTime); // value in hertz
+		osc.frequency.value = freq; // value in hertz
+
+		osc_volume.gain.linearRampToValueAtTime(1, audioCtx.currentTime + 0.01);
 		osc.connect(audioCtx.destination);
-		setTimeout(() => osc.disconnect(), 100);
+		setTimeout(() =>
+			osc_volume.gain.linearRampToValueAtTime(
+				0,
+				audioCtx.currentTime + 0.01,
+				100
+			)
+		);
 	};
 
 	render() {
