@@ -3,12 +3,14 @@ import "./App.css";
 
 var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 let osc = audioCtx.createOscillator();
-osc.type = "triangle";
+osc.type = "sawtooth";
 
 var osc_volume = audioCtx.createGain();
 osc_volume.gain.linearRampToValueAtTime(0, 0);
 osc.connect(osc_volume);
 osc_volume.connect(audioCtx.destination);
+
+osc.start();
 
 class App extends Component {
 	constructor(props) {
@@ -17,7 +19,8 @@ class App extends Component {
 			ranges: [440, 440, 440, 440, 440, 440, 440, 440],
 			currentRange: 0,
 			firstTime: true,
-			volume: 0.1
+			volume: 0.1,
+			playing: false
 		};
 	}
 	changeSlider = (event, index) => {
@@ -31,14 +34,19 @@ class App extends Component {
 	};
 
 	loop = () => {
-		var intervalId = setInterval(this.cycleSound, 250);
-		this.setState(() => ({
-			intervalId
-		}));
+		if (!this.state.playing) {
+			var intervalId = setInterval(this.cycleSound, 250);
+			this.setState(() => ({
+				intervalId
+			}));
+		}
 	};
 	stopLoop = () => {
 		clearInterval(this.state.intervalId);
-		osc.disconnect(audioCtx.destination);
+		if (this.state.playing) {
+			osc.disconnect(audioCtx.destination);
+			this.setState(() => ({ playing: false }));
+		}
 	};
 	cycleSound = () => {
 		const { ranges, currentRange } = this.state;
@@ -51,10 +59,10 @@ class App extends Component {
 		}));
 	};
 	playSound = freq => {
-		if (this.state.firstTime) {
-			osc.start();
-			this.setState(state => ({ firstTime: false }));
+		if (!this.state.playing) {
+			this.setState(state => ({ playing: true }));
 		}
+
 		osc.frequency.value = freq; // value in hertz
 
 		osc_volume.gain.linearRampToValueAtTime(1, audioCtx.currentTime + 0.01);
@@ -83,7 +91,7 @@ class App extends Component {
 							onChange={() => this.changeSlider(window.event, i)}
 							type="range"
 							min="40"
-							max="2000"
+							max="1500"
 						/>
 					))}
 				</div>
